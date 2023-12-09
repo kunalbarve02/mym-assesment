@@ -1,4 +1,3 @@
-import { exec } from 'child_process';
 import * as chromeLauncher from 'chrome-launcher';
 import PromptSync from 'prompt-sync';
 import puppeteer from 'puppeteer';
@@ -83,13 +82,18 @@ const availableSocialMediaSites = [
   'linkedin',
 ];
 
+
+console.log('Available social media sites: ');
+console.log(availableSocialMediaSites.join(', '));
+console
+
 const prompt = new PromptSync();
 const socialMediaName = prompt('Enter a social media site: ');
 if(!socialMediaName) {
   console.log('Please enter a social media site.');
   process.exit(1);
 }
-if(!availableSocialMediaSites.includes(socialMediaName)) {
+if(!availableSocialMediaSites.includes(socialMediaName.toLowerCase())) {
   console.log('Please enter a valid social media site.');
   process.exit(1);
 }

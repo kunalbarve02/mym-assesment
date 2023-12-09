@@ -1,3 +1,4 @@
+import exec from 'child_process';
 import * as chromeLauncher from 'chrome-launcher';
 import PromptSync from 'prompt-sync';
 import puppeteer from 'puppeteer';
@@ -6,6 +7,23 @@ const { SecretsManager } = AWS;
 const secretsManager = new SecretsManager({
     region: 'ap-south-1',
 });
+
+const checkChromium = async () => {
+    try {
+        const data = await exec.execSync('chromium-browser --version');
+        console.log('Chromium is installed.');
+    }
+    catch (error) {
+        console.log('Chromium is not installed. Installing it now...');
+        try {
+            await exec.execSync('sudo apt-get update');
+            await exec.execSync('sudo apt-get install chromium-browser');
+            console.log('Chromium is installed.');
+        } catch (error) {
+            console.error(error);
+        }
+    }
+};
 
 const addSecret = async (socialMediaName, email, password) => {
     try {
@@ -35,6 +53,8 @@ const openChromiumAndLogin = async (socialMediaName, email, password) => {
     console.log('Please enter a social media site before launching Chromium.');
     return;
   }
+  await checkChromium();
+
   const socialMediaSelectors = {
     facebook: {
         email: '#email',

@@ -8,17 +8,20 @@ const secretsManager = new SecretsManager({
     region: 'ap-south-1',
 });
 
-const checkChromium = async () => {
+const checkChrome = async () => {
     try {
-        const data = await exec.execSync('chromium-browser --version');
+        await exec.execSync('google-chrome --version');
         console.log('Chromium is installed.');
     }
     catch (error) {
-        console.log('Chromium is not installed. Installing it now...');
+        console.log('Chrome is not installed. Installing it now...');
         try {
-            await exec.execSync('sudo apt-get update');
-            await exec.execSync('sudo apt-get install chromium-browser');
-            console.log('Chromium is installed.');
+            await exec.execSync('sudo su root');
+            await exec.execSync('echo "export APP_ENV=dev" >> /etc/environment');
+            await exec.execSync('sudo yum update -y amazon-linux-extras');
+            await exec.execSync('echo "export TYPE_SERVER=AWS" >> /etc/environment');
+            await exec.execSync('sudo wget https://dl.google.com/linux/chrome/rpm/stable/x86_64/google-chrome-stable-110.0.5481.177-1.x86_64.rpm && yum localinstall -y google-chrome-stable-110.0.5481.177-1.x86_64.rpm');
+            console.log('Chrome is installed.');
         } catch (error) {
             console.error(error);
         }
@@ -53,18 +56,13 @@ const openChromiumAndLogin = async (socialMediaName, email, password) => {
     console.log('Please enter a social media site before launching Chromium.');
     return;
   }
-  await checkChromium();
+  await checkChrome();
 
   const socialMediaSelectors = {
     facebook: {
         email: '#email',
         password: '#pass',
         loginButton: 'button[name="login"]',
-    },
-    instagram: {
-        email: 'input[name="username"]',
-        password: 'input[name="password"]',
-        loginButton: 'button[type="submit"]',
     },
     linkedin: {
         email: '#session_key',
@@ -75,13 +73,15 @@ const openChromiumAndLogin = async (socialMediaName, email, password) => {
   try {
     const browser = await puppeteer.launch({
         headless: false,
+	    userDataDir:'/home/ec2-user/.config/google-chrome/',  
         executablePath: await chromeLauncher.launch({
             chromeFlags: [
             '--window-size=1920,1080',
             '--disable-extensions',
             '--proxy-server=\'direct://\'',
             '--proxy-bypass-list=*',
-            '--start-maximized'
+            '--start-maximized',
+	        '--no-sandbox'
             ],
         }).then(chrome => chrome.executablePath),
         });
@@ -98,14 +98,12 @@ const openChromiumAndLogin = async (socialMediaName, email, password) => {
 
 const availableSocialMediaSites = [
   'facebook',
-  'instagram',
   'linkedin',
 ];
 
 
 console.log('Available social media sites: ');
 console.log(availableSocialMediaSites.join(', '));
-console
 
 const prompt = new PromptSync();
 const socialMediaName = prompt('Enter a social media site: ');
